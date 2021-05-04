@@ -37,17 +37,16 @@
     <!-- Right navigation bar for control tabs -->
     <v-navigation-drawer app right clipped permanent dark width="350" color="#1e1e1e">
     <v-container>
-      <span class="subheading font-weight-medium white--text ml-4">ORGANIZE IMAGES</span>
       <!-- Button for adding image(s) -->
       <v-btn dark block left class="py-0 mt-4" @click="import_image()">
         <v-icon left class="mr-2">add_photo_alternate</v-icon>
-        <span>Add New Image</span>
+        <span>Add New Images</span>
         <input multiple type="file" id="open_image" accept=".jpg,.jpeg,.png,.bmp" @change="add_image" style="display: none">
       </v-btn>
       <!-- Button for removing image -->
       <v-btn dark block left class="py-0 mt-1" @click="remove_image()">
         <v-icon left class="mr-2">mdi-image-remove</v-icon>
-        <span>Remove Image</span>
+        <span>Remove Selected Image</span>
       </v-btn>
       <!-- Button for estimating age -->
       <v-btn dark block left class="py-0 mt-1" @click="estimate_age()">
@@ -71,14 +70,22 @@
         :disabled="selected.key==0"
         type="number"
         placeholder="Age"
-        style="width: 45px; margin-left: 15px; color: white"
+        style="width: 55px; margin-left: 5px; color: white"
       ><span class="white--text"> years old</span>
       </v-container>
 
-      <v-divider class="mt-2 mb-4" />
-      <span class="subheading font-weight-medium white--text ml-4">GENERATE TIMELAPSE</span>
-      <!-- Radio buttons for selecting jump-cut/cross-fading -->
+      <v-divider class="mb-2" />
+
+      <!-- Radio buttons for selecting eye/LSE alignment -->
       <v-container>
+      <span class="white--text ml-1">Select Mode for Face Alignment</span>
+      <v-radio-group row v-model="alignment_type">
+        <v-row align="center" justify="space-around">
+          <v-radio label="Eye Alignment" value="eye" />
+          <v-radio label="Least Square" value="lse" />
+        </v-row>
+      </v-radio-group>
+      <!-- Radio buttons for selecting jump-cut/cross-fading -->
       <span class="white--text ml-1">Select Mode for Face Transitions</span>
       <v-radio-group row v-model="transition_type">
         <v-row align="center" justify="space-around">
@@ -165,6 +172,7 @@ export default {
   },
   data() {
     return {
+      alignment_type: "eye",
       transition_type: "jump-cut",
       fps: "30",
       pause: 1,
@@ -286,9 +294,12 @@ export default {
     // render video!!!
     render_video() {
       this.working = true;
+      this.video_view = false;
+      this.video_src = undefined;
       const config = { headers: { "Content-Type": "multipart/form-data" } };
       const data = new FormData();
       data.append("list", JSON.stringify(this.list));
+      data.append("align", this.alignment_type);
       data.append("mode", this.transition_type);
       data.append("pause", this.pause);
       data.append("fps", this.fps);
@@ -328,6 +339,12 @@ export default {
     },
     // backdoor for developer
     __debug__() {
+      console.log(this.alignment_type);
+      console.log(this.transition_type);
+      console.log(this.fps);
+      console.log(this.pause);
+      console.log(this.fade_duration);
+      console.log(this.selected);
       console.log(this.list);
     }
   },

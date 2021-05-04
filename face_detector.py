@@ -17,8 +17,8 @@ class FaceDetector:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         angles = [0, 10, -10, 20, -20, 30, -30]
         for a in angles:
-            img_rotated = rotate_image(img, degreesCCW=a)
-            gray_rotated = rotate_image(gray, degreesCCW=a)
+            img_rotated, _ = rotate_image(img, degreesCCW=a)
+            gray_rotated, _ = rotate_image(gray, degreesCCW=a)
             faces = self.face_cascade.detectMultiScale(gray_rotated, 1.2, 5)
             if len(faces) > 0:
                 area_largest = float("-inf")
@@ -37,6 +37,7 @@ class FaceDetector:
 
 
 # a utility tool used to rotate images to detect angled faces
+# returns the rotated image as numpy array and the affine transformation matrix
 def rotate_image(img, scaleFactor=1, degreesCCW=30):
     # note: numpy uses (y,x) convention but most OpenCV functions use (x,y)
     (oldY, oldX) = img.shape[:2]
@@ -58,7 +59,7 @@ def rotate_image(img, scaleFactor=1, degreesCCW=30):
     M[1,2] += ty
 
     rotatedImg = cv2.warpAffine(img, M, dsize=(int(newX),int(newY)))
-    return rotatedImg
+    return rotatedImg, M
 
 
 # if __name__ == "__main__":

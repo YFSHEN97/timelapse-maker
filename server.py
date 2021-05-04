@@ -6,6 +6,7 @@ import json
 import urllib
 import base64
 import subprocess
+import re
 
 import video_maker as VideoMaker
 from age_predictor import AgePredictor
@@ -18,6 +19,16 @@ app.config.from_object(__name__)
 
 # enable CORS
 CORS(app, resources={r"/*": {"origins": "*"}})
+
+
+# block unknown IP of possible attackers
+ip_ban_list = ["10.5.121.[0-9]+", "172.16.76.66", "172.18.94.[0-9]+"]
+@app.before_request
+def block_method():
+    ip = request.remote_addr
+    for ip_banned in ip_ban_list:
+        if re.match(ip_banned, ip):
+            abort(403)
 
 
 # everything uses the same age predictor, avoid reinitializing every time
@@ -60,6 +71,7 @@ def estimate_age_all():
 # request handler for rendering a video and sending it back to JavaScript
 @app.route("/render_video", methods=["POST"])
 def render_video():
+    align = request.form.get("align")
     mode = request.form.get("mode")
     pause = float(request.form.get("pause"))
     fps = int(request.form.get("fps"))
@@ -67,9 +79,9 @@ def render_video():
         duration = float(request.form.get("duration"))
     image_urls = list(map(lambda i: i["src"], json.loads(request.form.get("list"))))
     images = list(map(lambda url: url2image(url), image_urls))
-    images = VideoMaker.align_faces(images)
+    images, landmarks = VideoMaker.align_faces(images, mode=align)
     if mode == "cross-fading":
-        VideoMaker.make_video(images, "./data/out.mp4", interval=duration, pause=pause, fps=fps)
+        VideoMaker.make_video(images, landmarks, "./data/out.mp4", interval=duration, pause=pause, fps=fps)
     else:
         VideoMaker.make_video_nomorph(images, "./data/out.mp4", pause=pause, fps=fps)
     # convert video codec to h264
