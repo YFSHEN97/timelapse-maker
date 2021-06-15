@@ -16,11 +16,22 @@ This should automatically install all the dependencies for the frontend user int
 ```
 $ npm run serve
 ```
-to launch the frontend, and
+to launch the frontend
+
+To install **pip** dependencies, execute
+```bash
+$ python3 -m pip install -r requirements.txt
+```
+
+Then, execute
 ```
 $ python3 server.py
 ```
 to run the Python server. To access the application, open your browser and go to `localhost:8080`.
+
+### Possible errors
+* `ERR_BLOCKED_BY_CLIENT` in browser console  
+    **Solution:** Disable Ad-blocker extension in your browser
 
 ### Questions
 
